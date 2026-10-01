@@ -1,0 +1,16 @@
+image: ghcr.io/defenseunicorns/uds-registry/provision-organization:0.1.1@sha256:2c026a4b0469b0f717bbd857ba9fafb321c8d0109df4dc51b950d1927482d6c2
+registryUrl: https://registry.uds.dev
+organization: replication-test
+tokenExpiry: 168h
+idp: keycloak
+source:
+  endpoint: https://registry.defenseunicorns.com
+  repository: navy-tide/netbox
+destinationRepository: netbox
+tagFilter:
+  versionSelector: v4.6.0-uds.0-upstream
+overwriteExisting: false
+verifyTag: v4.6.0-uds.0-upstream
+ignoreLocalTlsErrors: true
+timeoutSeconds: 3600
+maxAttempts: 2

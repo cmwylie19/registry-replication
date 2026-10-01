@@ -1,0 +1,17 @@
+tasks:
+  - name: create
+    description: Create the complete replication evaluation bundle
+    actions:
+      - cmd: |
+          if ! compgen -G 'build/zarf-package-uds-registry-*-0.0.0-dev-unicorn.tar.zst' >/dev/null; then
+            uds run -f tasks/build.yaml all --set VERSION=0.0.0-dev
+          fi
+        dir: ../..
+      - cmd: uds zarf --cache .cache/zarf package create packages/preflight --output build --confirm
+      - cmd: uds zarf --cache .cache/zarf package create packages/settings --output build --confirm
+      - cmd: uds zarf --cache .cache/zarf package create packages/bootstrap --output build --confirm
+      - cmd: uds --uds-cache .cache/uds create . --output build --confirm
+  - name: deploy
+    description: Deploy the full demo using upstream credentials from Docker login or uds-config.yaml
+    actions:
+      - cmd: node deploy.mjs

@@ -1,0 +1,88 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: replication-bootstrap
+  annotations:
+    helm.sh/hook: post-install,post-upgrade
+    helm.sh/hook-delete-policy: before-hook-creation
+spec:
+  activeDeadlineSeconds: {{ .Values.timeoutSeconds }}
+  backoffLimit: 0
+  template:
+    metadata:
+      labels:
+        app: replication-bootstrap
+    spec:
+      serviceAccountName: replication-bootstrap
+      restartPolicy: Never
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+      initContainers:
+        - name: create-demo-login
+          image: {{ .Values.image | quote }}
+          command: ["node", "/bootstrap/create-demo-login.mjs"]
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+          envFrom:
+            - secretRef:
+                name: replication-credentials
+          volumeMounts:
+            - name: bootstrap
+              mountPath: /bootstrap
+              readOnly: true
+        - name: provision-organization
+          image: {{ .Values.image | quote }}
+          command: ["node", "/app/index.js"]
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+          envFrom:
+            - secretRef:
+                name: replication-credentials
+          env:
+            - name: HOME
+              value: /tmp
+            - name: REGISTRY_URL
+              value: {{ .Values.registryUrl | quote }}
+            - name: REGISTRY_ORG_NAME
+              value: {{ .Values.organization | quote }}
+            - name: REGISTRY_IDP
+              value: {{ .Values.idp | quote }}
+            - name: REGISTRY_TOKEN_EXPIRY
+              value: {{ .Values.tokenExpiry | quote }}
+            - name: ORGANIZATION_TOKEN_SECRET_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: ORGANIZATION_TOKEN_SECRET_NAME
+              value: organization-token
+            - name: ORGANIZATION_TOKEN_VERBOSE
+              value: "false"
+      containers:
+        - name: replicate
+          image: {{ .Values.image | quote }}
+          command: ["node", "/bootstrap/replicate.mjs"]
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+          envFrom:
+            - secretRef:
+                name: replication-credentials
+          env:
+            - name: HOME
+              value: /tmp
+          volumeMounts:
+            - name: bootstrap
+              mountPath: /bootstrap
+              readOnly: true
+      volumes:
+        - name: bootstrap
+          configMap:
+            name: replication-bootstrap

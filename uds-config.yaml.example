@@ -1,0 +1,6 @@
+# Private deployment inputs. Keep the completed uds-config.yaml out of Git.
+shared:
+  # The bundle creates this login and generates its password.
+  admin_username: "doug"
+  source_username: "REPLACE_WITH_UPSTREAM_READ_USERNAME"
+  source_password: "REPLACE_WITH_UPSTREAM_READ_TOKEN"

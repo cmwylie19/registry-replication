@@ -1,0 +1,23 @@
+kind: ZarfPackageConfig
+metadata:
+  name: demo-preflight
+  version: 0.1.0
+  yolo: true
+variables:
+  - name: CLUSTER_NAME
+    default: registry-replication
+components:
+  - name: demo-preflight
+    required: true
+    actions:
+      onDeploy:
+        before:
+          - cmd: |
+              if k3d cluster list -o json | ./zarf tools yq -e '.[] | select(.name == strenv(ZARF_VAR_CLUSTER_NAME))' >/dev/null; then
+                echo "Refusing to replace existing cluster ${ZARF_VAR_CLUSTER_NAME}. Choose another CLUSTER_NAME."
+                exit 1
+              fi
+          - cmd: printf '%s' "${ZARF_VAR_CLUSTER_NAME}"
+            mute: true
+            setVariables:
+              - name: CLUSTER_NAME

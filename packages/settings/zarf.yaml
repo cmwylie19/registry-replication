@@ -1,0 +1,12 @@
+kind: ZarfPackageConfig
+metadata:
+  name: replication-settings
+  version: 0.1.0
+components:
+  - name: replication-settings
+    required: true
+    charts:
+      - name: replication-settings
+        version: 0.1.0
+        namespace: uds-system
+        localPath: chart

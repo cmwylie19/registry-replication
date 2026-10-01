@@ -1,0 +1,14 @@
+kind: ZarfPackageConfig
+metadata:
+  name: replication-bootstrap
+  version: 0.1.0
+components:
+  - name: replication-bootstrap
+    required: true
+    charts:
+      - name: replication-bootstrap
+        version: 0.1.0
+        namespace: uds-system
+        localPath: chart
+    images:
+      - ghcr.io/defenseunicorns/uds-registry/provision-organization:0.1.1@sha256:2c026a4b0469b0f717bbd857ba9fafb321c8d0109df4dc51b950d1927482d6c2
